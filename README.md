@@ -6,6 +6,7 @@ Small tools built with Claude Code. Pick one:
 |---|---|---|---|
 | 1 | [Photo cleaner](photo-cleaner/) | Copies your Android phone's photos and videos to your PC, finds duplicates, blurry shots, screenshots and big videos, and lets you review and delete or compress them in a local web page. | Windows PC, Android phone + USB cable, Python, about 1 GB of disk for tools |
 | 2 | [Router speedup](router-speedup/) | A guided check of your home Wi-Fi: measure speed and ping, find a better Wi-Fi channel, check the line quality, then measure again. | Claude Code with a browser tool, access to your router's admin page |
+| 3 | [Itinerary maker](itinerary-maker/) | Turns your booking confirmations into one friendly trip page: to-do list, day-by-day cards, links and spend. | Claude (Code or claude.ai) and your booking documents |
 
 ## How to use
 

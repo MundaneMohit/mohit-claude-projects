@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portugal May 2027 (sample)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@400;600;700;800&display=swap">
+<!-- SAMPLE TRIP. Every name, number and booking below is made up. Replace with your own documents. -->
+<style>
+:root{
+  --bg:#EED3A0; --card:#FFF7E6; --fg:#33210F; --muted:#7A5D3B; --line:#DDBF88;
+  --accent:#0E7C7B; --accent-soft:#CFEDE6; --accent-fg:#ffffff;
+  --todo:#A8431E; --todo-soft:#FBE3CF; --ok:#2F7D32; --ok-soft:#DDF0D6;
+  --gold:#D49A2A; --trail:#8A5A2B;
+  --sky1:#7FCBE3; --sky2:#FBD891; --sun:#FFE27A; --dune1:#E7B866; --dune2:#D69A45; --roof:#C8553D; --wall:#F4E9D2; --sea:#3BA6C4;
+  --display:'Lilita One','Trebuchet MS',system-ui,sans-serif;
+  --body:'Nunito','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1C1733; --card:#28214A; --fg:#F4E6C8; --muted:#BBA987; --line:#433A68;
+  --accent:#4FD1C5; --accent-soft:#1E3A44; --accent-fg:#06232a;
+  --todo:#F2A35C; --todo-soft:#3A2915; --ok:#7DD99A; --ok-soft:#173526;
+  --gold:#F0C05A; --trail:#E3B873;
+  --sky1:#15123A; --sky2:#4A3A78; --sun:#F4EFD8; --dune1:#6B5236; --dune2:#4F3C27; --roof:#8E3B2B; --wall:#6E6250; --sea:#24597A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1C1733; --card:#28214A; --fg:#F4E6C8; --muted:#BBA987; --line:#433A68;
+  --accent:#4FD1C5; --accent-soft:#1E3A44; --accent-fg:#06232a;
+  --todo:#F2A35C; --todo-soft:#3A2915; --ok:#7DD99A; --ok-soft:#173526;
+  --gold:#F0C05A; --trail:#E3B873;
+  --sky1:#15123A; --sky2:#4A3A78; --sun:#F4EFD8; --dune1:#6B5236; --dune2:#4F3C27; --roof:#8E3B2B; --wall:#6E6250; --sea:#24597A; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;padding:20px 16px 40px}
+.wrap{max-width:640px;margin-inline:auto;display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;letter-spacing:.01em;text-wrap:balance}
+h1{font-size:2.4rem} h2{font-size:1.5rem}
+a{color:var(--accent);font-weight:700}
+.sub{color:var(--muted);margin:4px 0 0}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px}
+.todo{background:var(--todo-soft);border:2px dashed var(--todo)} .todo h2{color:var(--todo)}
+.todo ul{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+section{display:flex;flex-direction:column;gap:12px}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.links a{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:2px solid var(--line);background:var(--card);border-radius:10px;text-decoration:none;min-height:48px}
+.links small{color:var(--muted);font-weight:400}
+.day{position:relative;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.head{display:flex;gap:12px;align-items:baseline}
+.date{font-family:var(--display);font-size:1.2rem;min-width:4.6rem;color:var(--accent)}
+.date small{display:block;font-family:var(--body);font-weight:600;color:var(--muted);font-size:.78rem}
+.route{font-weight:800} .plan{margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:.9rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.8rem;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.todo{background:var(--todo-soft);color:var(--todo)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:10px;background:var(--accent-soft);color:var(--accent);text-decoration:none;font-size:.92rem}
+.note{font-size:.9rem;border-top:2px dotted var(--line);padding-top:8px} .note b{color:var(--todo)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)} td.n,th.n{text-align:right}
+tfoot td{font-weight:800;border-bottom:0}
+footer{color:var(--muted);font-size:.85rem}
+.scene{display:block;width:100%;height:auto;border-radius:18px;border:3px solid var(--trail)}
+.trailpath{stroke:var(--trail);stroke-width:3;stroke-linecap:round;stroke-dasharray:.1 9;fill:none;animation:march 1.2s linear infinite}
+@keyframes march{to{stroke-dashoffset:-18}}
+.bob{animation:bob .32s ease-in-out infinite alternate} @keyframes bob{to{transform:translateY(-4px)}}
+.leg{transform-box:fill-box;transform-origin:50% 0;animation:swing .32s ease-in-out infinite alternate}
+.leg.b{animation-direction:alternate-reverse} @keyframes swing{from{transform:rotate(-28deg)}to{transform:rotate(28deg)}}
+.float{animation:floaty 3.2s ease-in-out infinite alternate} @keyframes floaty{to{transform:translateY(-6px)}}
+.trail{position:relative;padding-left:30px}
+.trail::before{content:"";position:absolute;left:10px;top:48px;bottom:24px;border-left:4px dotted var(--trail)}
+.trail h2{margin-left:-30px}
+.trail .day::before{content:"";position:absolute;left:-29px;top:16px;width:14px;height:14px;border-radius:50%;background:var(--gold);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--trail)}
+.day.today{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head><body>
+<div class="wrap">
+<header style="display:flex;flex-direction:column;gap:10px">
+  <svg class="scene" viewBox="0 0 400 240" role="img" aria-label="Two travellers walk along a dotted trail past Lisbon's hills, a yellow tram and the sea">
+    <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky1)"/><stop offset="1" style="stop-color:var(--sky2)"/></linearGradient></defs>
+    <rect width="400" height="240" fill="url(#sky)"/>
+    <circle cx="330" cy="44" r="22" style="fill:var(--sun)"/>
+    <path d="M0 170 Q40 162 80 170 T160 170 T240 170 T320 170 T400 170 V200 H0Z" style="fill:var(--sea)"/>
+    <g style="fill:var(--wall)"><rect x="200" y="120" width="34" height="52"/><rect x="238" y="104" width="30" height="68"/><rect x="272" y="126" width="36" height="46"/><rect x="312" y="112" width="28" height="60"/></g>
+    <g style="fill:var(--roof)"><path d="M196 120 L217 102 L238 120Z"/><path d="M234 104 L253 86 L272 104Z"/><path d="M268 126 L290 108 L312 126Z"/><path d="M308 112 L326 96 L344 112Z"/></g>
+    <g class="float"><rect x="60" y="138" width="70" height="30" rx="6" fill="#F2C230"/><rect x="66" y="144" width="12" height="10" fill="#fff"/><rect x="84" y="144" width="12" height="10" fill="#fff"/><rect x="102" y="144" width="12" height="10" fill="#fff"/><path d="M95 138 L95 120" stroke="#333" stroke-width="2"/></g>
+    <path d="M0 192 Q100 176 200 194 T400 188 V240 H0Z" style="fill:var(--dune1)"/>
+    <path d="M0 220 Q110 206 220 222 T400 216 V240 H0Z" style="fill:var(--dune2)"/>
+    <g font-family="Nunito,sans-serif" font-size="9" font-weight="800" style="fill:var(--fg)">
+      <circle cx="90" cy="204" r="4" style="fill:var(--gold)"/><text x="76" y="198">Lisbon</text>
+      <circle cx="300" cy="200" r="4" style="fill:var(--gold)"/><text x="290" y="194">Porto</text>
+    </g>
+    <path id="trail" class="trailpath" d="M-60 210 C40 196 120 214 200 210 S320 196 460 212"/>
+    <g>
+      <animateMotion dur="9s" repeatCount="indefinite"><mpath href="#trail"/></animateMotion>
+      <g transform="scale(.7)"><g class="bob">
+        <rect class="leg" x="-26" y="-28" width="8" height="28" rx="4" fill="#3B4A6B"/><rect class="leg b" x="-16" y="-28" width="8" height="28" rx="4" fill="#3B4A6B"/>
+        <rect x="-30" y="-62" width="26" height="36" rx="7" fill="#0E7C7B"/><circle cx="-17" cy="-78" r="15" fill="#E7B98F"/>
+        <rect class="leg" x="10" y="-28" width="8" height="28" rx="4" fill="#5B3A29"/><rect class="leg b" x="20" y="-28" width="8" height="28" rx="4" fill="#5B3A29"/>
+        <path d="M6 -60 L32 -60 L36 -24 L2 -24Z" fill="#D49A2A"/><circle cx="19" cy="-76" r="14" fill="#C98F64"/>
+        <path d="M-4 -52 Q4 -44 8 -50" stroke="#E7B98F" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </g></g>
+    </g>
+  </svg>
+  <div>
+    <h1>Portugal<br>10–15 May 2027</h1>
+    <p class="sub">Home → Lisbon → Porto → Home · 5 nights · Sample trip: every booking here is made up</p>
+  </div>
+</header>
+
+<section class="panel todo">
+  <h2>To do before the trip</h2>
+  <ul>
+    <li><b>Porto hotel:</b> 13–15 May (2 nights) is not booked yet.</li>
+    <li><b>Train Lisbon → Porto</b> on 13 May: not booked. Seats sell out on Fridays.</li>
+    <li><b>Bags:</b> both flights are hand luggage only (10 kg). Check the size limit.</li>
+    <li><b>Check in online</b> 24 hours before each flight.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Bookings and links</h2>
+  <div class="links">
+    <a href="https://www.cp.pt/">Portuguese railways<small>Lisbon → Porto trains</small></a>
+    <a href="https://www.google.com/maps/search/?api=1&query=Alfama+Lisbon">Hotel in Alfama<small>Sample hotel · booking SAMPLE-123</small></a>
+    <a href="https://www.google.com/maps/search/?api=1&query=Ribeira+Porto">Porto riverside<small>Area for the 2nd hotel</small></a>
+  </div>
+</section>
+
+<section class="trail">
+  <h2>Day by day</h2>
+  <article class="day">
+    <div class="head"><div class="date">10 May<small>Mon</small></div><div class="route">Home → Lisbon</div></div>
+    <p class="plan">Morning flight to Lisbon, metro to the hotel, sunset at a miradouro.</p>
+    <div class="meta"><span><b>XX123</b> 08:10 → 10:35 (local)</span><span>Booking SAMPLE1</span></div>
+    <div class="chips"><span class="chip ok">Flight booked</span><span class="chip ok">Stay: Alfama hotel · 3 nights · €300</span></div>
+    <div class="btns"><a class="btn" href="https://www.google.com/maps/search/?api=1&query=Lisbon+Airport">Map: Lisbon airport</a></div>
+    <div class="note"><b>Check:</b> the hotel's check-in starts at 15:00. Ask to leave bags early.</div>
+  </article>
+  <article class="day">
+    <div class="head"><div class="date">11 May<small>Tue</small></div><div class="route">Lisbon</div></div>
+    <p class="plan">Nothing booked. Ideas: tram 28, Belém, pastéis de nata.</p>
+  </article>
+  <article class="day">
+    <div class="head"><div class="date">12 May<small>Wed</small></div><div class="route">Sintra day trip</div></div>
+    <p class="plan">Train from Rossio to Sintra, Pena Palace.</p>
+    <div class="chips"><span class="chip ok">Palace tickets · 10:00 slot · €40</span></div>
+    <div class="note"><b>Check:</b> palace time slots are strict. Take the 08:41 train at the latest.</div>
+  </article>
+  <article class="day">
+    <div class="head"><div class="date">13 May<small>Thu</small></div><div class="route">Lisbon → Porto</div></div>
+    <p class="plan">Check out, train to Porto, walk the Ribeira.</p>
+    <div class="chips"><span class="chip todo">Train: not booked</span><span class="chip todo">Stay: not booked</span></div>
+  </article>
+  <article class="day">
+    <div class="head"><div class="date">14 May<small>Fri</small></div><div class="route">Porto</div></div>
+    <p class="plan">Nothing booked. Ideas: Livraria Lello, port cellars in Gaia.</p>
+  </article>
+  <article class="day">
+    <div class="head"><div class="date">15 May<small>Sat</small></div><div class="route">Porto → Home</div></div>
+    <p class="plan">Evening flight home.</p>
+    <div class="meta"><span><b>XX456</b> 19:20 → 23:05 (local)</span><span>Booking SAMPLE2</span></div>
+    <div class="chips"><span class="chip ok">Flight booked</span></div>
+    <div class="note"><b>Check:</b> be at the airport by 17:20. The metro from the centre takes about 35 minutes.</div>
+  </article>
+</section>
+
+<section>
+  <h2>Spend (€)</h2>
+  <div class="panel">
+    <table>
+      <thead><tr><th>Category</th><th class="n">€</th></tr></thead>
+      <tbody><tr><td>Flights</td><td class="n">220</td></tr><tr><td>Hotel Lisbon, 3 nights</td><td class="n">300</td></tr><tr><td>Sintra palace tickets</td><td class="n">40</td></tr></tbody>
+      <tfoot><tr><td>Total so far</td><td class="n">560</td></tr></tfoot>
+    </table>
+  </div>
+  <p class="sub">Only amounts shown on documents. Porto hotel and train not counted yet.</p>
+</section>
+
+<footer>Sample page. A real trip page holds booking numbers: share it only with people on the trip.</footer>
+</div>
+<script>
+// Highlights today's card during the trip.
+(function(){try{var M={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11},n=new Date();
+document.querySelectorAll(".day").forEach(function(c){var t=c.querySelector(".date").childNodes[0].nodeValue.trim().split(" ");
+if(+t[0]===n.getDate()&&M[t[1]]===n.getMonth()&&n.getFullYear()===2027){c.classList.add("today");c.scrollIntoView();}});}catch(e){}})();
+</script>
+</body></html>
