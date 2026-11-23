@@ -45,7 +45,7 @@ Every task can have `title`, `instruction`, `text` (a reading passage) and `audi
 | `choice` | multiple choice (a/b/c) | `items: [{ "n": 1, "q": "question", "text": "optional own passage", "options": {"a": "...", "b": "...", "c": "..."}, "answer": "b", "why": "optional explanation" }]` |
 | `truefalse` | richtig / falsch | `items: [{ "n": 41, "statement": "...", "answer": true }]` |
 | `match` | headings to texts, ads to people, statements to speakers | `options: {"a": "heading a", ...}`, `allowNone: true` if "0 / keine Anzeige" is allowed, `items: [{ "n": 1, "text": "the text or person", "answer": "c" }]` (use `"0"` for none) |
-| `gap` | Sprachbausteine / cloze | `gapText: "Liebe Karin, ... [21] ... [22] ..."`, `items: [{ "n": 21, "options": {"a": "...", "b": "...", "c": "..."}, "answer": "a" }]`, or a shared word bank: `bank: {"a": "word", ...}` and items without `options` |
+| `gap` | Sprachbausteine / cloze | `gapText: "Hallo Tom, ... [21] ... [22] ..."`, `items: [{ "n": 21, "options": {"a": "...", "b": "...", "c": "..."}, "answer": "a" }]`, or a shared word bank: `bank: {"a": "word", ...}` and items without `options` |
 | `write` | Schreiben | `prompt`, `minWords`, optional `rubric` (how the exam grades it) |
 | `speak` | Sprechen | `prompt`, optional `rubric` |
 
