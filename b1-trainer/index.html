@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deutsch-Prüfungstrainer</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--fg:#1d1b16;--muted:#6b665c;--line:#e2ddd2;--accent:#1f6f5c;--accent-soft:#dcefe8;--ok:#2f7d32;--ok-soft:#e1f2e0;--bad:#b3261e;--bad-soft:#fbe4e2;--warn:#a8431e}
+@media (prefers-color-scheme:dark){:root{--bg:#15171a;--card:#1e2125;--fg:#ece8df;--muted:#a59f93;--line:#33373d;--accent:#5cc8a8;--accent-soft:#1d3a33;--ok:#7dd99a;--ok-soft:#173526;--bad:#ff8a80;--bad-soft:#3d1d1b;--warn:#f2a35c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,'Segoe UI',sans-serif;padding:16px}
+.wrap{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{line-height:1.2;margin:0} h1{font-size:1.7rem} h2{font-size:1.25rem} h3{font-size:1.05rem}
+a{color:var(--accent)} .muted{color:var(--muted)} .small{font-size:.88rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+.btn.alt{background:transparent;color:var(--accent)} .btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:99px;padding:6px 12px;font:inherit;cursor:pointer}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.instr{background:var(--accent-soft);border-radius:8px;padding:10px 12px;margin:0}
+.passage{white-space:pre-wrap;border-left:3px solid var(--line);padding-left:12px}
+.item{border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:6px}
+.opts{display:flex;flex-direction:column;gap:4px}
+.opts label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.item.ok{background:var(--ok-soft);border-radius:8px;padding:8px} .item.bad{background:var(--bad-soft);border-radius:8px;padding:8px}
+.why{font-size:.9rem;color:var(--muted)}
+select,textarea,input[type=text]{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+textarea{width:100%;min-height:180px}
+.gaptext{white-space:pre-wrap;line-height:2.1}
+.gaptext select{margin:0 2px}
+.bank{display:flex;flex-wrap:wrap;gap:6px}.bank span{border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:.9rem}
+.score{font-weight:700}
+.pill{display:inline-block;border-radius:99px;padding:1px 9px;font-size:.8rem;background:var(--accent-soft);color:var(--accent);font-weight:700}
+audio{width:100%}
+pre.prompt{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:.85rem;max-height:220px;overflow:auto}
+</style></head><body>
+<div class="wrap" id="app"><p>Lade …</p></div>
+<script>
+// Deutsch-Prüfungstrainer: renders any paper in papers/<id>/paper.json (format: IMPORT.md).
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS={get(k,f){try{const v=localStorage.getItem(k);return v==null?f:JSON.parse(v)}catch(e){return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let papers=[], paper=null, base='', secIdx=0, answers={}, checked=false;
+const app=$('#app');
+
+async function load(){
+  try{ const r=await fetch('papers/index.json',{cache:'no-store'}); papers=r.ok?await r.json():[]; }catch(e){ papers=[]; }
+  const custom=LS.get('b1.custom',[]); custom.forEach(p=>papers.push({id:p.id,title:p.title,exam:p.exam,custom:true}));
+  route();
+}
+window.addEventListener('hashchange',route);
+function route(){
+  const h=location.hash.slice(1).split('/');
+  if(h[0]==='p'&&h[1]) openPaper(h[1],+h[2]||0); else home();
+}
+
+function home(){
+  const best=LS.get('b1.best',{});
+  app.innerHTML=`<header><h1>Deutsch-Prüfungstrainer</h1><p class="muted">B1-Prüfungen üben: Lesen, Sprachbausteine, Hören, Schreiben, Sprechen. Alles bleibt auf diesem Computer.</p></header>
+  <section class="card"><h2>Prüfungen</h2>${papers.length?papers.map(p=>`<div class="row" style="justify-content:space-between"><div><b>${esc(p.title)}</b> <span class="pill">${esc(p.exam||'')}</span>${p.custom?' <span class="pill">eigene Datei</span>':''}<div class="small muted">${best[p.id]?'Bestes Ergebnis: '+best[p.id]:'Noch nicht geübt'}</div></div><a class="btn" href="#p/${encodeURIComponent(p.id)}/0">Öffnen</a></div>`).join(''):'<p class="muted">Noch keine Prüfungen. Siehe „Eigene Prüfung hinzufügen“.</p>'}</section>
+  <section class="card"><h2>Eigene Prüfung hinzufügen</h2>
+    <p>Du hast einen Übungstest als <b>Link (URL)</b>, <b>PDF</b> oder <b>Foto/Scan</b>? Gib ihn Claude Code in diesem Ordner und sag zum Beispiel:</p>
+    <pre class="prompt" id="imp">Importiere diese Prüfung in den B1-Trainer (b1-trainer/IMPORT.md): &lt;Link, PDF-Pfad oder Bild&gt;</pre>
+    <div class="row"><button class="btn alt" id="copyImp">Text kopieren</button></div>
+    <p class="small muted">Claude liest die Aufgaben, die Lösungen und (falls vorhanden) das Audio, legt <code>papers/&lt;name&gt;/paper.json</code> an und trägt sie hier ein. Danach die Seite neu laden.</p>
+    <p class="small">Schon eine fertige <code>paper.json</code>? <input type="file" id="file" accept=".json,application/json"></p>
+  </section>
+  <p class="small muted">Offizielle kostenlose Übungstests: <code>get-official-papers.ps1</code> lädt sie herunter (Goethe-Institut, telc). Danach Claude: „Importiere die heruntergeladenen Prüfungen“.</p>`;
+  $('#copyImp').onclick=()=>{navigator.clipboard?.writeText($('#imp').textContent).then(()=>$('#copyImp').textContent='Kopiert')};
+  $('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JSON.parse(await f.text());if(!p.id||!p.sections)throw new Error('Kein gültiges paper.json (id und sections fehlen).');const c=LS.get('b1.custom',[]).filter(x=>x.id!==p.id);c.push(p);LS.set('b1.custom',c);location.reload();}catch(err){alert(err.message)}};
+}
+
+async function openPaper(id,s){
+  if(!paper||paper.id!==id){
+    const c=LS.get('b1.custom',[]).find(x=>x.id===id);
+    if(c){paper=c;base='';}
+    else{ base='papers/'+id+'/'; try{const r=await fetch(base+'paper.json',{cache:'no-store'});paper=await r.json();}catch(e){app.innerHTML=`<p>Konnte ${esc(base)}paper.json nicht laden. Läuft serve.ps1?</p><a href="#">Zurück</a>`;return;} }
+  }
+  secIdx=Math.min(s,paper.sections.length-1); answers=LS.get(key(),{}); checked=false; renderPaper();
+}
+const key=()=>'b1.ans.'+paper.id+'.'+secIdx;
+
+function renderPaper(){
+  const sec=paper.sections[secIdx];
+  app.innerHTML=`<div class="row"><a href="#">← Alle Prüfungen</a></div>
+  <header><h1>${esc(paper.title)}</h1><p class="small muted">${esc(paper.source||'')}</p></header>
+  <nav class="tabs">${paper.sections.map((x,i)=>`<button class="${i===secIdx?'on':''}" data-i="${i}">${esc(x.title)}</button>`).join('')}</nav>
+  <section class="card"><div class="row" style="justify-content:space-between"><h2>${esc(sec.title)}</h2>${sec.minutes?`<span class="pill">${sec.minutes} Min.</span>`:''}</div>
+  ${sec.tasks.map((t,ti)=>renderTask(t,ti)).join('<hr style="border:0;border-top:1px solid var(--line);width:100%">')}
+  ${hasAuto(sec)?`<div class="row"><button class="btn" id="check">Antworten prüfen</button><button class="btn alt" id="reset">Zurücksetzen</button><span class="score" id="score"></span></div>`:''}
+  </section>`;
+  $$('.tabs button').forEach(b=>b.onclick=()=>location.hash='#p/'+encodeURIComponent(paper.id)+'/'+b.dataset.i);
+  $$('[data-k]').forEach(el=>{
+    const k=el.dataset.k;
+    if(el.type==='radio'){ if(answers[k]===el.value) el.checked=true; el.onchange=()=>save(k,el.value); }
+    else { if(answers[k]!=null) el.value=answers[k]; el.oninput=()=>{save(k,el.value); if(el.tagName==='TEXTAREA') wc(el);}; if(el.tagName==='TEXTAREA') wc(el); }
+  });
+  $$('audio[data-start]').forEach(a=>{const s=+a.dataset.start||0,e=a.dataset.end?+a.dataset.end:null;a.addEventListener('loadedmetadata',()=>{if(a.currentTime<s)a.currentTime=s;});a.addEventListener('play',()=>{if(a.currentTime<s||(e&&a.currentTime>=e))a.currentTime=s;});if(e)a.addEventListener('timeupdate',()=>{if(a.currentTime>=e)a.pause();});});
+  $$('[data-copy]').forEach(b=>b.onclick=()=>{const t=gradePrompt(+b.dataset.copy);navigator.clipboard?.writeText(t).then(()=>b.textContent='Kopiert – in Claude einfügen');});
+  if($('#check')) $('#check').onclick=check;
+  if($('#reset')) $('#reset').onclick=()=>{answers={};LS.set(key(),answers);renderPaper();};
+}
+function save(k,v){answers[k]=v;LS.set(key(),answers);}
+function wc(el){const n=(el.value.trim().match(/\S+/g)||[]).length;const o=$('#wc-'+el.dataset.k.replace(/\W/g,'_'));if(o)o.textContent=n+' Wörter';}
+const hasAuto=sec=>sec.tasks.some(t=>!['write','speak'].includes(t.type));
+const k=(ti,n)=>ti+'-'+n;
+const audioHtml=a=>a?`<audio controls preload="metadata" src="${esc(base+a.src)}" data-start="${a.start||0}" ${a.end!=null?`data-end="${a.end}"`:''}></audio>${a.start!=null||a.end!=null?`<p class="small muted">Abschnitt ${mmss(a.start||0)}${a.end!=null?'–'+mmss(a.end):''}</p>`:''}`:'';
+const mmss=s=>Math.floor(s/60)+':'+String(Math.round(s%60)).padStart(2,'0');
+const radios=(name,opts)=>`<div class="opts">${Object.entries(opts).map(([v,l])=>`<label><input type="radio" name="${name}" value="${esc(v)}" data-k="${name}"> <span><b>${esc(v)}</b> ${esc(l)}</span></label>`).join('')}</div>`;
+
+function renderTask(t,ti){
+  const head=`${t.title?`<h3>${esc(t.title)}</h3>`:''}${t.instruction?`<p class="instr">${esc(t.instruction)}</p>`:''}${audioHtml(t.audio)}${t.text?`<div class="passage">${esc(t.text)}</div>`:''}`;
+  if(t.type==='choice') return head+t.items.map(it=>`<div class="item" data-item="${k(ti,it.n)}"><div><b>${it.n}</b> ${esc(it.q||it.statement||'')}</div>${it.text?`<div class="passage">${esc(it.text)}</div>`:''}${radios(k(ti,it.n),it.options)}<div class="why" hidden></div></div>`).join('');
+  if(t.type==='truefalse') return head+t.items.map(it=>`<div class="item" data-item="${k(ti,it.n)}"><div><b>${it.n}</b> ${esc(it.statement)}</div>${radios(k(ti,it.n),{r:'richtig',f:'falsch'})}<div class="why" hidden></div></div>`).join('');
+  if(t.type==='match'){
+    const opts=Object.entries(t.options); const none=t.allowNone?`<option value="0">0 – keine passt</option>`:'';
+    return head+`<div class="opts">${opts.map(([v,l])=>`<div><b>${esc(v)}</b> ${esc(l)}</div>`).join('')}</div>`+t.items.map(it=>`<div class="item" data-item="${k(ti,it.n)}"><div><b>${it.n}</b> ${esc(it.text||'')}</div><div><select data-k="${k(ti,it.n)}"><option value="">–</option>${opts.map(([v])=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}${none}</select></div><div class="why" hidden></div></div>`).join('');
+  }
+  if(t.type==='gap'){
+    const byN=Object.fromEntries(t.items.map(it=>[String(it.n),it]));
+    const bank=t.bank?`<div class="bank">${Object.entries(t.bank).map(([v,l])=>`<span><b>${esc(v)}</b> ${esc(l)}</span>`).join('')}</div>`:'';
+    const body=esc(t.gapText||'').replace(/\[(\d+)\]/g,(m,n)=>{const it=byN[n];if(!it)return m;const o=it.options||t.bank;return `<b>${n}</b><select data-k="${k(ti,n)}" data-item-sel="${k(ti,n)}"><option value="">…</option>${Object.entries(o).map(([v,l])=>`<option value="${esc(v)}">${esc(t.bank?v:l)}</option>`).join('')}</select>`;});
+    return head.replace(t.text?`<div class="passage">${esc(t.text)}</div>`:'','')+bank+`<div class="gaptext">${body}</div>`+t.items.map(it=>`<div class="item" data-item="${k(ti,it.n)}" hidden><b>${it.n}</b> <span class="why"></span></div>`).join('');
+  }
+  if(t.type==='write') return head+`${t.prompt?`<div class="passage">${esc(t.prompt)}</div>`:''}<textarea data-k="${k(ti,'text')}" placeholder="Hier schreiben …"></textarea><div class="row small"><span id="wc-${k(ti,'text').replace(/\W/g,'_')}">0 Wörter</span>${t.minWords?`<span class="muted">Ziel: etwa ${t.minWords} Wörter</span>`:''}</div><div class="row"><button class="btn alt" data-copy="${ti}">Für Claude zur Bewertung kopieren</button></div>`;
+  if(t.type==='speak') return head+`${t.prompt?`<div class="passage">${esc(t.prompt)}</div>`:''}<p class="small muted">Sprich laut (z. B. mit einem Partner oder mit Aufnahme am Handy). Schreib danach auf, was du gesagt hast – oder diktiere es mit der Spracheingabe deines Computers (Windows: Win + H).</p><textarea data-k="${k(ti,'text')}" placeholder="Was hast du gesagt? …"></textarea><div class="row"><button class="btn alt" data-copy="${ti}">Für Claude zur Bewertung kopieren</button></div>`;
+  return head+`<p class="muted">Unbekannter Aufgabentyp: ${esc(t.type)}</p>`;
+}
+
+function check(){
+  const sec=paper.sections[secIdx]; let got=0,max=0;
+  sec.tasks.forEach((t,ti)=>{ if(['write','speak'].includes(t.type))return;
+    t.items.forEach(it=>{ max++; const a=answers[k(ti,it.n)]; const right=t.type==='truefalse'?(it.answer===true||it.answer==='r'||it.answer==='richtig'?'r':'f'):String(it.answer);
+      const ok=a!=null&&String(a)===right; if(ok)got++;
+      const box=$(`[data-item="${k(ti,it.n)}"]`); if(!box)return; box.hidden=false; box.classList.remove('ok','bad'); box.classList.add(ok?'ok':'bad');
+      const w=$('.why',box); if(w){w.hidden=false;w.innerHTML=(ok?'✓ richtig':'✗ richtig ist: <b>'+esc(right==='r'?'richtig':right==='f'?'falsch':right)+'</b>')+(it.why?' – '+esc(it.why):'');}
+      const sel=$(`[data-item-sel="${k(ti,it.n)}"]`); if(sel) sel.style.outline='2px solid '+(ok?'var(--ok)':'var(--bad)');
+    });
+  });
+  const pct=max?Math.round(got/max*100):0; $('#score').textContent=`${got} / ${max} richtig (${pct} %)`;
+  const best=LS.get('b1.best',{}); const label=`${sec.title}: ${got}/${max}`; best[paper.id]=label; LS.set('b1.best',best);
+}
+
+function gradePrompt(ti){
+  const t=paper.sections[secIdx].tasks[ti]; const text=answers[k(ti,'text')]||'';
+  const rubric=t.rubric||(t.type==='write'
+    ?'Bewerte nach den Kriterien der B1-Prüfung: Erfüllung der Aufgabe (alle Inhaltspunkte?), Kommunikative Gestaltung (Textsorte, Anrede/Gruß, Verbindung der Sätze), Formale Richtigkeit (Grammatik, Wortschatz, Rechtschreibung).'
+    :'Bewerte nach den Kriterien der B1-Prüfung: Aufgabenerfüllung, Interaktion, Flüssigkeit, Wortschatz, Grammatik. (Aussprache kann aus dem Text nicht bewertet werden.)');
+  return `Du bist Prüfer:in für ${paper.exam||'Deutsch B1'}. Bewerte meine Antwort und erkläre auf einfachem Deutsch (mit kurzer englischer Zusammenfassung), was gut war und was ich verbessern soll. Gib eine korrigierte Version.\n\nAufgabe (${paper.title} – ${paper.sections[secIdx].title}):\n${t.instruction||''}\n${t.prompt||''}\n\n${rubric}\n\nMeine Antwort (${(text.trim().match(/\S+/g)||[]).length} Wörter):\n${text}`;
+}
+load();
+</script>
+</body></html>

@@ -1,0 +1,372 @@
+{
+    "id":  "grammatik-drill",
+    "title":  "Grammatik-Drill (32 Aufgaben)",
+    "exam":  "B1 Grammatik",
+    "source":  "Eigene Übungen, mit Claude geschrieben. Frei verwendbar.",
+    "sections":  [
+                     {
+                         "title":  "Sprachbausteine-Drill",
+                         "minutes":  20,
+                         "tasks":  [
+                                       {
+                                           "type":  "choice",
+                                           "instruction":  "32 Sprachbausteine im Prüfungsformat, geschrieben von Claude. Typische B1-Stolpersteine: Konnektoren, Relativpronomen, Konjunktiv II, Passiv, Präpositionen mit Verben, Wortstellung. 1 Punkt pro Aufgabe.",
+                                           "items":  [
+                                                         {
+                                                             "n":  1,
+                                                             "q":  "Ich weiß nicht, ___ er morgen kommt.",
+                                                             "options":  {
+                                                                             "a":  "ob",
+                                                                             "b":  "dass",
+                                                                             "c":  "wenn"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Indirekte Ja/Nein-Frage → „ob“. „dass“ steht nach Aussagen (Ich weiß, dass …), „wenn“ ist temporal/konditional."
+                                                         },
+                                                         {
+                                                             "n":  2,
+                                                             "q":  "Wenn ich mehr Zeit ___, würde ich öfter Sport machen.",
+                                                             "options":  {
+                                                                             "a":  "habe",
+                                                                             "b":  "hätte",
+                                                                             "c":  "hatte"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "Irrealer Wunsch/Bedingung → Konjunktiv II: hätte … würde."
+                                                         },
+                                                         {
+                                                             "n":  3,
+                                                             "q":  "Das ist der Mann, ___ ich gestern geholfen habe.",
+                                                             "options":  {
+                                                                             "a":  "der",
+                                                                             "b":  "den",
+                                                                             "c":  "dem"
+                                                                         },
+                                                             "answer":  "c",
+                                                             "why":  "„helfen“ verlangt Dativ → Relativpronomen „dem“."
+                                                         },
+                                                         {
+                                                             "n":  4,
+                                                             "q":  "Er kam zu spät, ___ er den Bus verpasst hatte.",
+                                                             "options":  {
+                                                                             "a":  "weil",
+                                                                             "b":  "deshalb",
+                                                                             "c":  "trotzdem"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Nebensatz mit Verb am Ende (verpasst hatte) → Subjunktion „weil“. Nach „deshalb/trotzdem“ steht das Verb direkt dahinter."
+                                                         },
+                                                         {
+                                                             "n":  5,
+                                                             "q":  "Die Rechnung wurde gestern ___.",
+                                                             "options":  {
+                                                                             "a":  "bezahlen",
+                                                                             "b":  "bezahlt",
+                                                                             "c":  "bezahlte"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "Passiv Präteritum: wurde + Partizip II."
+                                                         },
+                                                         {
+                                                             "n":  6,
+                                                             "q":  "Ich freue mich ___ deinen Besuch nächste Woche.",
+                                                             "options":  {
+                                                                             "a":  "über",
+                                                                             "b":  "auf",
+                                                                             "c":  "für"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "sich freuen auf = Zukunft; sich freuen über = etwas, das schon passiert ist."
+                                                         },
+                                                         {
+                                                             "n":  7,
+                                                             "q":  "___ des schlechten Wetters sind wir wandern gegangen.",
+                                                             "options":  {
+                                                                             "a":  "Wegen",
+                                                                             "b":  "Trotz",
+                                                                             "c":  "Während"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "Gegensatz: Das Wetter war schlecht, wir sind trotzdem gegangen → „trotz“ (+ Genitiv)."
+                                                         },
+                                                         {
+                                                             "n":  8,
+                                                             "q":  "Sie hat ___ ein neues Fahrrad gekauft.",
+                                                             "options":  {
+                                                                             "a":  "ihr",
+                                                                             "b":  "sich",
+                                                                             "c":  "sie"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "Reflexiv im Dativ: sich (Dat.) etwas kaufen. „ihr“ wäre eine andere Person."
+                                                         },
+                                                         {
+                                                             "n":  9,
+                                                             "q":  "Könnten Sie mir bitte sagen, wo ___?",
+                                                             "options":  {
+                                                                             "a":  "ist der Bahnhof",
+                                                                             "b":  "der Bahnhof ist",
+                                                                             "c":  "der Bahnhof sei"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "Indirekte Frage = Nebensatz → Verb am Ende."
+                                                         },
+                                                         {
+                                                             "n":  10,
+                                                             "q":  "Ich habe keine Lust, heute Abend ___.",
+                                                             "options":  {
+                                                                             "a":  "auszugehen",
+                                                                             "b":  "ausgehen",
+                                                                             "c":  "zu ausgehen"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Infinitiv mit „zu“; bei trennbaren Verben steht „zu“ in der Mitte: aus-zu-gehen."
+                                                         },
+                                                         {
+                                                             "n":  11,
+                                                             "q":  "Je mehr man übt, ___ besser wird man.",
+                                                             "options":  {
+                                                                             "a":  "desto",
+                                                                             "b":  "als",
+                                                                             "c":  "so"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Feste Struktur: je … desto/umso."
+                                                         },
+                                                         {
+                                                             "n":  12,
+                                                             "q":  "Mein Bruder ist zwei Jahre ___ ich.",
+                                                             "options":  {
+                                                                             "a":  "älter als",
+                                                                             "b":  "älter wie",
+                                                                             "c":  "so alt als"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Komparativ + „als“. „wie“ nur bei Gleichheit (so alt wie)."
+                                                         },
+                                                         {
+                                                             "n":  13,
+                                                             "q":  "Nachdem wir gegessen ___, machten wir einen Spaziergang.",
+                                                             "options":  {
+                                                                             "a":  "haben",
+                                                                             "b":  "hatten",
+                                                                             "c":  "hätten"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "„nachdem“ + Vorzeitigkeit: Hauptsatz Präteritum → Nebensatz Plusquamperfekt."
+                                                         },
+                                                         {
+                                                             "n":  14,
+                                                             "q":  "Ich interessiere mich sehr ___ Geschichte.",
+                                                             "options":  {
+                                                                             "a":  "an",
+                                                                             "b":  "für",
+                                                                             "c":  "über"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "sich interessieren für (+ Akkusativ)."
+                                                         },
+                                                         {
+                                                             "n":  15,
+                                                             "q":  "Das Auto ___ dringend repariert werden.",
+                                                             "options":  {
+                                                                             "a":  "muss",
+                                                                             "b":  "musst",
+                                                                             "c":  "müssen"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Passiv mit Modalverb: muss + Partizip II + werden. Subjekt „das Auto“ = 3. Person Singular."
+                                                         },
+                                                         {
+                                                             "n":  16,
+                                                             "q":  "Sie fragte mich, ___ ich am Wochenende Zeit hätte.",
+                                                             "options":  {
+                                                                             "a":  "dass",
+                                                                             "b":  "ob",
+                                                                             "c":  "wann"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "Indirekte Ja/Nein-Frage → „ob“. „wann“ nur, wenn nach dem Zeitpunkt gefragt wird."
+                                                         },
+                                                         {
+                                                             "n":  17,
+                                                             "q":  "Er spricht sehr gut Deutsch, ___ er erst seit einem Jahr hier lebt.",
+                                                             "options":  {
+                                                                             "a":  "obwohl",
+                                                                             "b":  "weil",
+                                                                             "c":  "damit"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Gegensatz (gut Deutsch trotz kurzer Zeit) → „obwohl“."
+                                                         },
+                                                         {
+                                                             "n":  18,
+                                                             "q":  "Ich lerne Deutsch, ___ in Deutschland arbeiten zu können.",
+                                                             "options":  {
+                                                                             "a":  "um",
+                                                                             "b":  "damit",
+                                                                             "c":  "für"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Gleiches Subjekt → um … zu + Infinitiv. „damit“ braucht einen Nebensatz mit eigenem Subjekt."
+                                                         },
+                                                         {
+                                                             "n":  19,
+                                                             "q":  "Das Buch, ___ ich dir empfohlen habe, ist sehr spannend.",
+                                                             "options":  {
+                                                                             "a":  "das",
+                                                                             "b":  "dass",
+                                                                             "c":  "was"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Relativpronomen zu „das Buch“ (Neutrum, Akkusativ) = „das“. „dass“ ist eine Konjunktion, kein Pronomen."
+                                                         },
+                                                         {
+                                                             "n":  20,
+                                                             "q":  "Mit ___ Freundin fährst du in den Urlaub?",
+                                                             "options":  {
+                                                                             "a":  "welche",
+                                                                             "b":  "welcher",
+                                                                             "c":  "welchem"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "„mit“ + Dativ, feminin → welcher."
+                                                         },
+                                                         {
+                                                             "n":  21,
+                                                             "q":  "Er hat den ganzen Tag ___ Computer gearbeitet.",
+                                                             "options":  {
+                                                                             "a":  "am",
+                                                                             "b":  "im",
+                                                                             "c":  "auf dem"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Feste Wendung: am Computer arbeiten."
+                                                         },
+                                                         {
+                                                             "n":  22,
+                                                             "q":  "Ich hätte gern ___ Kilo Äpfel und zwei Brötchen.",
+                                                             "options":  {
+                                                                             "a":  "ein",
+                                                                             "b":  "einen",
+                                                                             "c":  "eins"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "„das Kilo“ → Akkusativ „ein Kilo“."
+                                                         },
+                                                         {
+                                                             "n":  23,
+                                                             "q":  "Wir haben uns sehr ___ das Geschenk gefreut.",
+                                                             "options":  {
+                                                                             "a":  "auf",
+                                                                             "b":  "über",
+                                                                             "c":  "an"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "Das Geschenk ist schon da → sich freuen über."
+                                                         },
+                                                         {
+                                                             "n":  24,
+                                                             "q":  "___ du mir helfen könntest, wäre ich dir sehr dankbar.",
+                                                             "options":  {
+                                                                             "a":  "Wenn",
+                                                                             "b":  "Als",
+                                                                             "c":  "Ob"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Höfliche Bedingung im Konjunktiv II → „wenn“. „als“ nur für einmalige Ereignisse in der Vergangenheit."
+                                                         },
+                                                         {
+                                                             "n":  25,
+                                                             "q":  "Seit wann ___ du in Berlin?",
+                                                             "options":  {
+                                                                             "a":  "wohnst",
+                                                                             "b":  "wohntest",
+                                                                             "c":  "hast gewohnt"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "„seit“ + Zustand, der noch andauert → Präsens (anders als im Englischen!)."
+                                                         },
+                                                         {
+                                                             "n":  26,
+                                                             "q":  "Als ich ein Kind ___, wollte ich Pilot werden.",
+                                                             "options":  {
+                                                                             "a":  "war",
+                                                                             "b":  "bin",
+                                                                             "c":  "wäre"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "„als“ + Vergangenheit → Präteritum „war“."
+                                                         },
+                                                         {
+                                                             "n":  27,
+                                                             "q":  "Ich muss mich noch ___ die Prüfung vorbereiten.",
+                                                             "options":  {
+                                                                             "a":  "auf",
+                                                                             "b":  "für",
+                                                                             "c":  "zu"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "sich vorbereiten auf (+ Akkusativ)."
+                                                         },
+                                                         {
+                                                             "n":  28,
+                                                             "q":  "Der Brief ist schon gestern ___ worden.",
+                                                             "options":  {
+                                                                             "a":  "abschicken",
+                                                                             "b":  "abgeschickt",
+                                                                             "c":  "abschickt"
+                                                                         },
+                                                             "answer":  "b",
+                                                             "why":  "Passiv Perfekt: ist + Partizip II + worden. Trennbares Verb: ab-ge-schickt."
+                                                         },
+                                                         {
+                                                             "n":  29,
+                                                             "q":  "Ich habe ___ Hunger, dass ich zwei Pizzen essen könnte.",
+                                                             "options":  {
+                                                                             "a":  "so",
+                                                                             "b":  "sehr",
+                                                                             "c":  "zu"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Konsekutivsatz: so … dass."
+                                                         },
+                                                         {
+                                                             "n":  30,
+                                                             "q":  "Er hat mir ___, dass er pünktlich kommt.",
+                                                             "options":  {
+                                                                             "a":  "versprochen",
+                                                                             "b":  "verspricht",
+                                                                             "c":  "versprechen"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Perfekt: hat + Partizip II „versprochen“ (unregelmäßig, kein ge-, weil ver- untrennbar ist)."
+                                                         },
+                                                         {
+                                                             "n":  31,
+                                                             "q":  "Kannst du mir sagen, ___ der Kurs beginnt?",
+                                                             "options":  {
+                                                                             "a":  "wann",
+                                                                             "b":  "wenn",
+                                                                             "c":  "ob"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Frage nach dem Zeitpunkt → „wann“ (Fragewort), nicht „wenn“."
+                                                         },
+                                                         {
+                                                             "n":  32,
+                                                             "q":  "Ich bin müde, ___ gehe ich jetzt ins Bett.",
+                                                             "options":  {
+                                                                             "a":  "deshalb",
+                                                                             "b":  "weil",
+                                                                             "c":  "obwohl"
+                                                                         },
+                                                             "answer":  "a",
+                                                             "why":  "Folge im Hauptsatz (Verb an Position 2: deshalb gehe ich) → „deshalb“. Nach „weil/obwohl“ müsste das Verb am Ende stehen."
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                     }
+                 ]
+}

@@ -1,3 +1,8 @@
+# B1 trainer: imported/downloaded tests stay local; only the own grammar drill is shared
+b1-trainer/papers/*
+!b1-trainer/papers/grammatik-drill/
+b1-trainer/papers/index.json
+
 # Personal data and downloaded tools never go into the repo
 photo-cleaner/data/
 photo-cleaner/models/
