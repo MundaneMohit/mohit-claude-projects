@@ -1,0 +1,14 @@
+# Personal data and downloaded tools never go into the repo
+photo-cleaner/data/
+photo-cleaner/models/
+photo-cleaner/bin/
+__pycache__/
+*.pyc
+*.db
+*.log
+.venv/
+venv/
+.env
+*.key
+*.pem
+*.json.bak

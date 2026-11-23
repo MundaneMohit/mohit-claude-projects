@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo cleaner</title>
+<style>
+:root{--bg:#f6f5f2;--panel:#fff;--ink:#1c1b19;--mute:#6f6b63;--line:#e2dfd8;--accent:#1f6f5c;--accent-ink:#fff;--danger:#b3261e;--sel:#2f6fdb;--mark:#d9780f;--chip:#ece9e2;--cell:160px}
+@media (prefers-color-scheme:dark){:root{--bg:#161614;--panel:#1f1f1c;--ink:#ecebe6;--mute:#9a968c;--line:#32312d;--accent:#58b79f;--accent-ink:#0d1f1a;--danger:#f2776d;--sel:#7aa7ff;--mark:#f2a04a;--chip:#2a2926}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,"Segoe UI",sans-serif;display:grid;grid-template-columns:260px 1fr;height:100vh;overflow:hidden}
+nav{background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:16px 10px}
+nav h1{font-size:15px;margin:0 8px 14px;font-weight:650}
+nav button{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;border:0;background:none;color:inherit;font:inherit;padding:8px 10px;border-radius:8px;cursor:pointer}
+nav button:hover{background:var(--chip)}
+nav button[aria-current=true]{background:var(--accent);color:var(--accent-ink)}
+nav button small{opacity:.75;font-variant-numeric:tabular-nums;white-space:nowrap}
+nav hr{border:0;border-top:1px solid var(--line);margin:10px 6px}
+main{display:flex;flex-direction:column;min-width:0;min-height:0;height:100vh}
+header{padding:14px 20px 10px;border-bottom:1px solid var(--line);background:var(--panel);flex:none;display:flex;gap:18px;align-items:flex-start}
+#hl{flex:1;min-width:0}
+#top{flex:none;width:292px;position:relative;font-size:12px}
+.tbrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.tbrow button{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:4px 10px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.tbrow button:hover:not(:disabled){border-color:var(--mute)}
+.tile{margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--chip);cursor:pointer;font-variant-numeric:tabular-nums}
+.tile .t1{font-size:12px;color:var(--mute)}.tile .t1 b{font-size:17px;color:var(--accent)}
+.tile .t2{color:var(--mute);margin-top:4px}
+.pop{position:absolute;right:0;top:100%;margin-top:4px;width:380px;max-width:calc(100vw - 24px);box-sizing:border-box;overflow-wrap:anywhere;z-index:30;padding:10px;border-radius:10px;background:var(--panel);border:1px solid var(--line);box-shadow:0 8px 28px #0005;font-size:12px}
+@media(max-width:900px){header{flex-wrap:wrap}#top{width:100%}.pop{width:100%}}
+header h2{margin:0;font-size:18px;font-weight:650}
+header p{margin:2px 0 10px;color:var(--mute)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bar button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+.bar button:hover{border-color:var(--mute)}
+.bar button:disabled{opacity:.45;cursor:default}
+.bar .primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.bar .mark{background:var(--mark);color:#1c1200;border-color:var(--mark);font-weight:600}
+.bar .keepbtn{border-color:var(--accent);color:var(--accent);font-weight:600}
+.bar .danger{background:var(--danger);color:#fff;border-color:var(--danger);font-weight:600}
+.bar .count{margin-left:auto;color:var(--mute);font-variant-numeric:tabular-nums}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.bar label{display:inline-flex;align-items:center;gap:6px;color:var(--mute)}
+.bar input[type=range]{width:120px;accent-color:var(--accent)}
+#grid{flex:1;min-height:0;overflow-y:auto;padding:16px 20px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cell),1fr));gap:10px;align-content:start}
+.group{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cell),1fr));gap:10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.cell{position:relative;height:0;padding-bottom:100%;border-radius:10px;overflow:hidden;background:var(--chip);cursor:pointer;outline:3px solid transparent;outline-offset:-3px;user-select:none}
+.cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cell.marked{outline-color:var(--mark)}
+.cell.sel{outline-color:var(--sel)}
+.cell.sel img{opacity:.55}
+.cell.sel::after{content:"✓";position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--sel);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:13px}
+.cell.pd{outline-color:var(--mark)} .cell.pk{outline-color:var(--accent)}
+.cell.pd::before,.cell.pk::before,#pbadge{position:absolute;z-index:2;bottom:4px;left:4px;padding:1px 6px;border-radius:5px;font-weight:700;font-size:11px;color:#fff}
+.cell.pd::before{content:"DELETE";background:var(--mark)} .cell.pk::before{content:"KEEP";background:var(--accent);color:var(--accent-ink)}
+#strip .cell.pd::before,#strip .cell.pk::before{font-size:9px;padding:0 4px}
+#pbadge{bottom:auto;left:50%;top:14px;transform:translateX(-50%);font-size:18px;padding:4px 14px;border-radius:8px}
+#pbadge.d{background:var(--mark)} #pbadge.k{background:var(--accent);color:var(--accent-ink)}
+.cell.cur{outline-color:var(--ink)}
+#strip .cell.cur{margin:0 10px;outline:4px solid var(--accent);outline-offset:3px;border-radius:8px}
+#strip .cell:not(.cur){opacity:.8}
+.cell .meta{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 4px;font-size:11px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.72));display:flex;justify-content:space-between;gap:4px;white-space:nowrap}
+.cell .tag{position:absolute;top:6px;left:6px;font-size:10px;font-weight:700;letter-spacing:.03em;padding:2px 6px;border-radius:5px;background:rgba(0,0,0,.65);color:#fff}
+.cell .tag.keep{background:var(--accent);color:var(--accent-ink)}
+.cell .tag.mark{background:var(--mark);color:#1c1200}
+.cell .tag.del{background:var(--danger);color:#fff}
+.cell .see{border:0;border-radius:5px;background:rgba(255,255,255,.25);color:#fff;font:inherit;font-size:11px;padding:0 6px;cursor:pointer}
+.empty{grid-column:1/-1;color:var(--mute);padding:40px 0;text-align:center}
+#more{grid-column:1/-1;height:1px}
+#pv{flex:1;min-height:0;display:none;flex-direction:column}
+#stage{flex:1;min-height:0;display:flex;gap:12px;align-items:center;justify-content:center;padding:12px 20px;position:relative}
+#stage img,#stage video{max-width:100%;max-height:100%;border-radius:10px;min-width:0}
+#stage figure{margin:0;flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+#stage figure video{max-height:calc(100% - 26px)}
+#stage figcaption{color:var(--mute);font-size:12px}
+#stage.sel::before{content:"✓ Selected";position:absolute;top:20px;left:28px;z-index:1;background:var(--sel);color:var(--accent-ink);font-weight:700;padding:4px 10px;border-radius:8px}
+#pinfo{flex:none;padding:6px 20px;color:var(--mute);font-size:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line)}
+#pinfo span{margin-right:auto}
+#pinfo button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:4px 10px;border-radius:7px;cursor:pointer}
+#pinfo kbd{border:1px solid var(--line);border-radius:4px;padding:0 5px;font:inherit}
+#strip{flex:none;display:flex;gap:6px;overflow-x:auto;padding:8px 20px 12px;background:var(--panel);border-top:1px solid var(--line)}
+#strip .cell{flex:none;width:84px;height:84px;padding:0}
+#strip .cell .meta{display:none}
+#strip .cell .tag{font-size:8px;padding:1px 4px;top:3px;left:3px}
+#strip #more{flex:none;width:1px;height:84px}
+body.pv #grid{display:none} body.pv #pv{display:flex}
+#swbar{display:none;flex:none;gap:12px;align-items:center;justify-content:center;padding:12px 20px 18px;background:var(--panel);border-top:1px solid var(--line)}
+#swbar button{font:inherit;font-size:16px;font-weight:650;border:0;border-radius:12px;padding:12px 26px;cursor:pointer;min-width:150px}
+#swdel{background:var(--danger);color:#fff} #swkeep{background:var(--accent);color:var(--accent-ink)}
+#swbar #swundo{min-width:0;background:var(--chip);color:var(--ink);font-size:14px;font-weight:500;padding:10px 16px}
+#swinfo{color:var(--mute);font-size:12px;min-width:200px;text-align:center}
+body.sw #strip,body.sw #pinfo em{display:none} body.sw #swbar{display:flex}
+body.sw #stage{touch-action:none;cursor:grab;user-select:none}
+#stage .verdict{position:absolute;top:24px;font-size:26px;font-weight:800;padding:6px 16px;border-radius:10px;border:3px solid;opacity:0;pointer-events:none}
+#stage .verdict.k{right:40px;color:var(--accent);transform:rotate(8deg)} #stage .verdict.d{left:40px;color:var(--danger);transform:rotate(-8deg)}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:0;max-width:min(94vw,1100px)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+#confirm footer{display:flex;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);justify-content:flex-end}
+#confirm{width:440px}
+#confirm div{padding:18px 18px 6px}
+#confirm h3{margin:0 0 8px}
+#prog{flex:none;background:var(--panel);border-top:1px solid var(--line);padding:8px 20px 10px;font-size:12px;color:var(--mute)}
+#progbar{height:6px;border-radius:3px;background:var(--chip);margin-top:6px;overflow:hidden}
+#progbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .6s}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;display:none;max-width:80vw;z-index:5}
+@media (max-width:760px){body{grid-template-columns:1fr;grid-template-rows:auto 1fr}nav{display:flex;overflow-x:auto;padding:8px}nav h1,nav hr{display:none}nav button{width:auto;white-space:nowrap}main{height:auto;min-height:0}#grid{padding:12px 16px 60px}}
+</style>
+</head>
+<body>
+<nav id="nav"><h1>Photo cleaner</h1></nav>
+<main>
+  <header>
+    <div id="hl"><h2 id="title"></h2><p id="hint"></p>
+    <div class="bar" id="bar"></div></div>
+    <div id="top"></div>
+  </header>
+  <div id="grid"></div>
+  <div id="pv">
+    <div id="stage"></div>
+    <div id="pinfo"><span id="ptext"></span><b id="pcmp"></b><em><kbd>←</kbd> <kbd>→</kbd> move · <kbd>Space</kbd> select · <kbd>D</kbd> tag delete · <kbd>A</kbd> tag keep</em></div>
+    <div id="strip"></div>
+    <div id="swbar"><button id="swdel">← Delete</button><button id="swundo">Undo (Z)</button><span id="swinfo"></span><button id="swkeep">Keep →</button></div>
+  </div>
+</main>
+<dialog id="confirm"><div><h3 id="ctitle"></h3><p id="ctext"></p><p id="c4kwrap" hidden><label><input type="checkbox" id="c4k"> Also scale 4K videos down to 1080p (<span id="c4kn"></span>). Much smaller, but fine detail is lost for good on the phone copy.</label></p><p id="ctypewrap" hidden><label>Type the number of files to confirm: <input id="ctype" inputmode="numeric" autocomplete="off" style="font:inherit;width:90px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)"></label></p></div><footer class="bar"><button id="cno">Cancel</button><button id="cyes" class="danger"></button></footer></dialog>
+<div id="prog" hidden><div id="progtext"></div><div id="progbar"><i></i></div></div>
+<div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s), PAGE=300, LS=(k,d)=>{try{return localStorage.getItem(k)??d}catch(e){return d}}, SET=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let view=LS('pc_view','dupes'), mode=(LS('pc_mode','grid')==='swipe'?'grid':LS('pc_mode','grid')), size=+LS('pc_size',160), views=[], items=[], sel=new Set(), offset=0, done=false, loading=false, sort=LS('pc_sort','size'), last=-1, cur=0, cmp=false, person=null, undo=[], learnInfo=null, showKept=false;
+const gb=b=>!b?'0':b>=1e9?(b/1e9).toFixed(2)+' GB':b>=1e6?(b/1e6).toFixed(0)+' MB':Math.max(1,Math.round(b/1e3))+' KB';
+const dur=s=>s?Math.floor(s/60)+':'+String(Math.round(s%60)).padStart(2,'0'):'';
+const api=(p,body)=>fetch(p,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}).then(r=>r.json());
+function toast(t,ms=4000){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',ms)}
+const host=()=>mode==='preview'?$('#strip'):$('#grid');
+
+async function loadNav(){
+  const s=await api('/api/summary'); views=s.views;
+  if(!views.some(v=>v.key===view)){view=views[0].key;SET('pc_view',view)}
+  const nav=$('#nav'); nav.querySelectorAll('button,hr').forEach(e=>e.remove());
+  let prev=null;
+  for(const v of views){
+    if(prev&&v.group!==prev)nav.append(document.createElement('hr')); prev=v.group;
+    const b=document.createElement('button'); b.setAttribute('aria-current',v.key===view);
+    b.innerHTML=`<span></span><small>${v.count.toLocaleString()} · ${v.key==='people'?v.kept+' kept':gb(v.bytes)}</small>`; b.firstChild.textContent=v.title;
+    b.onclick=()=>{view=v.key;person=null;SET('pc_view',view);open()}; nav.append(b);
+  }
+  const top=$('#top'), wasOpen=!!top.querySelector('.pop:not([hidden])'); top.innerHTML='';
+  const row=document.createElement('div'); row.className='tbrow'; top.append(row);
+  if(!top.dataset.bound){top.dataset.bound=1;document.addEventListener('click',e=>{if(!e.target.closest('#top'))document.querySelectorAll('#top .pop').forEach(p=>p.hidden=true)})}
+  const rb=document.createElement('button'); rb.innerHTML='<span>Reset review…</span>'; rb.onclick=askReset; rb.style.order=3; row.append(rb);
+  const ph=document.createElement('button'); ph.disabled=true; ph.style.cursor='default'; ph.innerHTML=`<span>${s.phone?'● Phone connected':'○ Phone not connected'}</span>`; ph.style.color=s.phone?'var(--accent)':'var(--danger)'; row.append(ph);
+  if(s.phone){const sb=document.createElement('button'); sb.innerHTML='<span>↻ Sync new files</span>'; sb.title='Copies photos and videos added to the phone since the last sync. Also runs by itself when you plug the phone in.';
+    sb.onclick=async()=>{const r=await api('/api/sync',{});if(r.error){toast(r.error);return}toast('Checking the phone for new files…');pollProg.now()}; row.append(sb)}
+  const sv=document.createElement('div'), tile=document.createElement('div'); sv.className='pop'; sv.hidden=!wasOpen;
+  {const v=k=>s.views.find(x=>x.key===k)||{bytes:0,count:0}, sz=b=>b<1e6?'0 MB':gb(b), pc=(a,b)=>b>0?(100*a/b<0.1&&a>0?'<0.1':(100*a/b).toFixed(1))+'%':'0%';
+   const freed=s.saved.bytes, marked=v('marked').bytes, now=v('all').bytes, start=now+freed, rest=Math.max(0,now-marked), st=s.saved.storage;
+   const seg=(b,c)=>`<i style="display:block;height:100%;width:${start?100*b/start:0}%;min-width:${b>0?3:0}px;background:${c}"></i>`;
+   const row=(c,l,b,sub)=>`<div style="display:flex;align-items:baseline;gap:6px;margin-top:5px"><i style="width:8px;height:8px;border-radius:2px;background:${c};flex:none"></i><span style="flex:1">${l}</span><b style="font-variant-numeric:tabular-nums">${sz(b)}</b><span style="color:var(--mute);min-width:38px;text-align:right;font-variant-numeric:tabular-nums">${pc(b,start)}</span></div>${sub?`<div style="font-size:11px;color:var(--mute);margin-left:14px">${sub}</div>`:''}`;
+   const rev=Math.min(rest,s.saved.review_bytes||0), RED='var(--del,#d64545)', BLUE='var(--sel,#3b82f6)', GREY='var(--mute)';
+   const brow=(c,l,b,sub)=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;line-height:1.4;margin-top:6px"><span style="width:84px;flex:none">${l}</span><span style="flex:1;height:8px;border-radius:4px;overflow:hidden;background:var(--line)"><i style="display:block;height:100%;width:${start?100*b/start:0}%;min-width:${b>0?3:0}px;background:${c}"></i></span><b style="width:62px;flex:none;text-align:right;font-variant-numeric:tabular-nums">${sz(b)}</b><span style="width:40px;flex:none;text-align:right;color:var(--mute);font-variant-numeric:tabular-nums">${pc(b,start)}</span></div>${sub?`<div style="font-size:11px;color:var(--mute);margin-left:92px">${sub}</div>`:''}`;
+   sv.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><div><div style="font-size:11px;color:var(--mute)">Space freed on phone</div><b style="font-size:24px;color:var(--accent);font-variant-numeric:tabular-nums">${sz(freed)}</b></div><div style="text-align:right"><b style="font-size:24px">${sz(start)}</b><div style="font-size:11px;color:var(--mute)">photos &amp; videos at the start</div></div></div>
+    <div>${brow(RED,'Deleted',s.saved.deleted_bytes,`${s.saved.deleted_files.toLocaleString()} files`)}${brow(BLUE,'Compression',s.saved.compress_bytes,'saved by shrinking videos')}${brow('var(--mark)','Marked',marked,`${v('marked').count.toLocaleString()} files, not deleted yet`)}${brow('var(--ink)','To review',rev,`${(s.saved.review_files||0).toLocaleString()} files in the review lists`)}${brow(GREY,'Rest',rest-rev,'not in any review list')}</div>
+    <div style="font-size:11px;color:var(--mute);margin-top:6px">% of the ${sz(start)} library you started with</div>`
+    +(st?`<div style="margin-top:10px;font-size:11px;color:var(--mute)">Photos &amp; videos on the phone${st.live?'':' (phone size last seen)'}</div><div style="font-size:13px;font-variant-numeric:tabular-nums"><b>${sz(now)}</b> of ${sz(st.total)} · <b>${pc(now,st.total)}</b> of the phone</div>
+    <div style="height:6px;border-radius:3px;overflow:hidden;background:var(--line,#8884);margin-top:4px"><i style="display:block;height:100%;width:${100*now/st.total}%;background:var(--accent)"></i></div>
+    <div style="font-size:11px;color:var(--mute);margin-top:3px">${sz(st.total-st.used)} free${marked?` · ${sz(st.total-st.used+marked)} after deleting marked`:''}</div>`:'');
+   tile.className='tile'; tile.title='Click for the breakdown';
+   tile.innerHTML=`<div class="t1" style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="line-height:1.35"><b>${sz(freed)}</b> freed<br><b style="color:var(--mark);font-size:17px">${sz(marked)}</b> marked</div><div style="text-align:right;line-height:1.1"><b style="font-size:26px;color:var(--ink)">${sz(start)}</b><br><span style="font-size:11px">photos &amp; videos<br>at the start</span></div></div>
+    <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--line);margin:5px 0 0">${seg(s.saved.deleted_bytes,RED)}${seg(s.saved.compress_bytes,BLUE)}${seg(marked,'var(--mark)')}</div>
+    <div class="t2">${st?`Photos &amp; videos ${sz(now)} of ${sz(st.total)} phone · <b style="color:var(--ink)">${pc(now,st.total)}</b>`:'Phone storage: not read yet'}</div>`;
+   tile.onclick=()=>{sv.hidden=!sv.hidden};}
+  top.append(tile, sv);
+  const v=views.find(x=>x.key===view)||views[0]; $('#title').textContent=v.title; $('#hint').textContent=v.hint;
+  if(s.job.running)pollJob();
+}
+function bar(){
+  const b=$('#bar'), n=sel.size, bytes=items.filter(i=>sel.has(i.id)).reduce((a,i)=>a+i.bytes,0); b.innerHTML='';
+  const add=(t,cls,fn,dis)=>{const x=document.createElement('button');x.textContent=t;if(cls)x.className=cls;x.disabled=!!dis;x.onclick=fn;b.append(x);return x};
+  if(person)add('← All people','',()=>{person=null;open()});
+  const seg=document.createElement('span');seg.className='seg';b.append(seg);
+  for(const[m,t]of[['grid','Grid'],['preview','Preview']]){const x=document.createElement('button');x.textContent=t;x.setAttribute('aria-pressed',mode===m);x.onclick=()=>setMode(m);seg.append(x)}
+  if(mode==='grid'){const l=document.createElement('label');l.innerHTML=`Size <input type="range" min="90" max="420" step="10" value="${size}" aria-label="Thumbnail size">`;l.firstElementChild.oninput=e=>{size=+e.target.value;SET('pc_size',size);applySize()};b.append(l)}
+  if(mode==='swipe'){const c=document.createElement('span');c.className='count';c.textContent=`${items.length.toLocaleString()}${done?'':'+'} left in this list`;b.append(c)}
+  {const l=document.createElement('label');l.innerHTML=`Sort <select aria-label="Sort" style="font:inherit;padding:5px 6px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)"><option value="size">Largest first</option><option value="list">List's own order</option><option value="score">Most likely delete</option><option value="new">Newest first</option><option value="old">Oldest first</option>${view==='marked'||view==='deleted'?`<option value="when">${view==='marked'?'Marked':'Deleted'}: latest first</option><option value="whenold">${view==='marked'?'Marked':'Deleted'}: earliest first</option>`:''}</select>`;
+   const s=l.querySelector('select');s.value=sort;s.onchange=()=>{sort=s.value;SET('pc_sort',sort);open()};b.append(l)}
+  if(canUnm()){const t=document.createElement('button');t.textContent=unm?'✓ Unmarked only':'Show unmarked only';t.setAttribute('aria-pressed',unm);t.title='Hide files already marked for deletion';t.onclick=()=>{unm=!unm;SET('pc_unm',unm?1:0);open()};b.append(t)}
+  if(mode==='swipe')return;
+  add('Select all loaded','',()=>{items.forEach(i=>{if(view==='sent_dupes'?i.flags.includes('sent_dupe'):!(view==='dupes'&&i.dupe_keep))sel.add(i.id)});paint()});
+  add('Select none','',()=>{sel.clear();paint()});
+  if(plan.size){const nd=[...plan.values()].filter(v=>v==='d').length, nk=plan.size-nd;
+    if(nd)add(`Move ${nd} to Marked for deletion`,'mark',()=>applyPlan('d'));
+    if(nk)add(`Move ${nk} to Kept`,'keepbtn',()=>applyPlan('a'));
+    add('Clear D/A tags','',()=>{plan.clear();paint()})}
+  if(view==='marked'){
+    add(`Unmark ${n||''}`,'',()=>mark(false),!n);
+    const m=views.find(x=>x.key==='marked');
+    add(`Delete all ${m.count.toLocaleString()} marked from phone`,'danger',askDelete,!m.count);
+  }else if(view==='deleted'){
+    add(`Restore ${n||''} to phone`,'primary',()=>job('/api/restore',{ids:[...sel]}),!n);
+    api('/api/deleted_days').then(days=>{const c=b.querySelector('.count');for(const d of days.slice(0,6)){const x=document.createElement('button');
+      x.textContent=`Restore all from ${new Date(d.day+'T12:00').toLocaleDateString(undefined,{day:'numeric',month:'short'})} (${d.n})`;x.onclick=()=>askRestoreDay(d);b.insertBefore(x,c)}});
+  }
+  else if(view==='kept') add(`Move ${n||''} back to review`,'',()=>keep(false),!n);
+  else if(view==='compressed') add(`Put ${n||''} originals back`,'',()=>job('/api/uncompress',{ids:[...sel]}),!n);
+  else{if(view==='videos'||view==='all'){const nv=items.filter(i=>sel.has(i.id)&&i.kind==='video'&&!i.flags.includes('compressed')).length;add(`Compress ${nv||''} on phone`,'',askCompress,!nv)}
+    add(`Keep ${n||''}`,'keepbtn',()=>keep(true),!n);add(`Mark ${n||''} for deletion`,'mark',()=>mark(true),!n)}
+  const c=document.createElement('span');c.className='count';c.textContent=n?`${n.toLocaleString()} selected · ${gb(bytes)}`:`${items.length.toLocaleString()} loaded`;b.append(c);
+}
+function applySize(){document.documentElement.style.setProperty('--cell',size+'px')}
+function setMode(m){const re=m==='swipe'||mode==='swipe';mode=m;SET('pc_mode',m);bodyMode();re?open():rebuild()}
+function bodyMode(){document.body.classList.toggle('pv',mode!=='grid');document.body.classList.toggle('sw',mode==='swipe')}
+function cell(i,idx){
+  const d=document.createElement('div'); d.className='cell'+(i.state==='marked'?' marked':'')+(sel.has(i.id)?' sel':''); d.dataset.idx=idx;
+  const tag=view==='sent_dupes'?(i.keep?'<span class="tag keep">KEPT</span>':i.flags.includes('sent_dupe')?'<span class="tag">SENT COPY</span>':'<span class="tag keep">ORIGINAL</span>'):view==='dupes'?(i.keep?'<span class="tag keep">KEPT</span>':i.dupe_keep?'<span class="tag keep">BEST COPY</span>':`<span class="tag">${i.flags.includes('dupe_exact')?'EXACT COPY':'LOOK-ALIKE'}</span>`):(i.state==='deleted'?'<span class="tag del">DELETED</span>':i.state==='marked'&&view!=='marked'?'<span class="tag mark">MARKED</span>':'');
+  const info=i.kind==='video'?`▶ ${dur(i.duration)}`:(view==='blurry'?`sharp ${Math.round(i.blur)}`:new Date(i.mtime*1000).toLocaleDateString());
+  d.innerHTML=`<img loading="lazy" src="/thumb/${i.id}" alt="">${tag}<div class="meta"><span>${info}</span><span>${i.orig?`${gb(i.orig)} → ${gb(i.bytes)}`:gb(i.bytes)}</span></div>`;
+  d.title=i.folder+'/'+i.name;
+  d.onclick=e=>{
+    if(mode==='preview'){go(idx);return}
+    if(e.shiftKey&&last>=0){const[a,b]=[Math.min(last,idx),Math.max(last,idx)];for(let k=a;k<=b;k++)sel.add(items[k].id)}
+    else sel.has(i.id)?sel.delete(i.id):sel.add(i.id);
+    last=idx;paint();
+  };
+  d.ondblclick=()=>{if(mode==='grid'){cur=idx;setMode('preview')}};
+  return d;
+}
+function paint(){
+  document.querySelectorAll('.cell').forEach(c=>{const it=items[c.dataset.idx];if(!it)return;c.classList.toggle('sel',sel.has(it.id));c.classList.toggle('cur',mode==='preview'&&+c.dataset.idx===cur);c.classList.toggle('pd',plan.get(it.id)==='d');c.classList.toggle('pk',plan.get(it.id)==='a')});
+  $('#stage').classList.toggle('sel',!!items[cur]&&mode!=='swipe'&&sel.has(items[cur].id));
+  {const st=$('#stage'), p=mode==='preview'&&items[cur]?plan.get(items[cur].id):null; let pb=$('#pbadge'); if(pb)pb.remove();
+   if(p){pb=document.createElement('span');pb.id='pbadge';pb.className=p==='d'?'d':'k';pb.textContent=p==='d'?'DELETE':'KEEP';st.style.position='relative';st.append(pb)}}
+  bar();
+}
+function render(from){
+  const g=host(), more=g.querySelector('#more');
+  if(!items.length){if(done){const e='<div class="empty">Nothing here.</div>';$('#grid').insertAdjacentHTML('afterbegin',e);$('#stage').innerHTML=e}$('#ptext').textContent='';return}
+  if(mode==='swipe'){if(from===0)show();return}
+  let box=null, gid=null; const grouped=(view==='dupes'||view==='sent_dupes')&&mode==='grid';
+  if(grouped&&from>0){const groups=g.querySelectorAll('.group');box=groups[groups.length-1];gid=items[from-1].dupe_group}
+  for(let k=from;k<items.length;k++){
+    const i=items[k];
+    if(grouped){
+      if(i.dupe_group!==gid){gid=i.dupe_group;box=document.createElement('div');box.className='group';g.insertBefore(box,more)}
+      box.append(cell(i,k));
+    }else g.insertBefore(cell(i,k),more);
+  }
+  if(mode==='preview'&&from===0)show();
+}
+function rebuild(){
+  $('#grid').innerHTML='';$('#strip').innerHTML='';io.disconnect();
+  const m=document.createElement('div');m.id='more';host().append(m);
+  io=new IntersectionObserver(e=>{if(e[0].isIntersecting)loadMore()},{root:host(),rootMargin:'600px'});io.observe(m);
+  cur=Math.min(cur,Math.max(items.length-1,0)); render(0); paint();
+  if(mode!=='grid')show();
+}
+function show(){
+  const i=items[cur], st=$('#stage');
+  if(!i){if(mode==='swipe'&&done){st.innerHTML='<div class="empty">All done in this list.</div>';$('#ptext').textContent='';$('#pcmp').innerHTML='';bar()}return}
+  const vid=(src,cap,muted)=>`<figure><video src="${src}" ${muted?'muted':'controls'} playsinline></video><figcaption>${cap}</figcaption></figure>`;
+  if(i.kind==='video'&&cmp&&i.comp){
+    st.innerHTML=vid(`/full/${i.id}`,`Original · ${gb(i.bytes)}`)+vid(`/comp/${i.id}`,`Compressed · ${gb(i.comp)} (${Math.round(100-100*i.comp/i.bytes)}% smaller)`,true);
+    const[a,b]=st.querySelectorAll('video');
+    a.onplay=()=>{b.currentTime=a.currentTime;b.play()};a.onpause=()=>b.pause();a.onseeked=()=>{b.currentTime=a.currentTime};
+  }else st.innerHTML=i.kind==='video'?`<video src="/full/${i.id}" controls playsinline></video>`:`<img src="/full/${i.id}" alt="">`;
+  st.querySelectorAll('video').forEach(v=>{
+    const swap=()=>{if(v.dataset.swapped)return;v.dataset.swapped=1;const m=v.src.match(/\/(full|comp)\/(\d+)/);if(!m)return;
+      const note=document.createElement('div');note.className='empty';note.style.cssText='position:absolute;bottom:8px;left:0;right:0';note.textContent='Preparing a preview this browser can play…';st.append(note);
+      v.addEventListener('loadeddata',()=>note.remove(),{once:true});v.src=`/play/${m[2]}?comp=${m[1]==='comp'?1:0}`;v.load()};
+    v.addEventListener('loadedmetadata',()=>{if(!v.videoWidth)swap()});v.addEventListener('error',swap)});
+  if(mode==='swipe'){st.insertAdjacentHTML('beforeend','<span class="verdict d">DELETE</span><span class="verdict k">KEEP</span>');swInfo()}
+  $('#ptext').textContent=(mode==='swipe'?(i.p_delete!=null?`Likely delete: ${Math.round(i.p_delete*100)}% · `:''):`${cur+1} / ${items.length}${done?'':'+'} · `)+`${i.folder}/${i.name} · ${i.w}×${i.h} · ${gb(i.bytes)} · ${new Date(i.mtime*1000).toLocaleString()}`+(i.vcodec?` · ${i.vcodec} ${Math.round(i.bitrate/1e6)} Mbps`:'');
+  const pc=$('#pcmp');pc.innerHTML='';
+  if(i.p_delete!=null&&i.kind==='photo'){
+    const x=document.createElement('button');x.textContent=`Why ${Math.round(i.p_delete*100)}%?`;pc.append(x);pc.append(' ');
+    x.onclick=async()=>{const w=await api('/api/why?id='+i.id), row=(t,a)=>`<figure style="flex:1"><figcaption>${t}</figcaption><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">${a.length?a.map(o=>`<img src="/thumb/${o.id}" title="similarity ${o.sim}" style="width:120px;height:120px;object-fit:cover">`).join(''):'<span class="empty">none yet</span>'}</div></figure>`;
+      st.innerHTML=`<figure style="flex:0 0 auto"><img src="/thumb/${i.id}" style="width:200px;height:200px;object-fit:cover"><figcaption>This photo</figcaption></figure>`+row('Looks most like these you DELETED',w.deleted)+row('Looks most like these you KEPT',w.kept)};
+  }
+  if(i.kind==='video'){
+    const mk=(t,fn)=>{const x=document.createElement('button');x.textContent=t;x.onclick=fn;pc.append(x);pc.append(' ')};
+    const openV=async w=>{st.querySelectorAll('video').forEach(v=>v.pause());const r=await api('/api/openvideo',{id:i.id,which:w});toast(r.error||`Opened in ${r.player}. This is the real file, not a preview.`)};
+    mk('▶ Play original in VLC',()=>openV('orig'));
+    if(i.comp){const trial=!i.flags.includes('compressed');mk(trial?'▶ Play original + trial copy in VLC':'▶ Play both in VLC',()=>openV('both'));mk(cmp?'Show original only':`Compare here (${gb(i.comp)}${trial?' trial copy':''})`,()=>{cmp=!cmp;show()});if(trial){const n=document.createElement('em');n.style.cssText='color:var(--mute);font-size:12px;margin-left:6px';n.textContent='Trial copy is only on this computer. The phone still has the original.';pc.append(n)}}
+  }
+  paint();
+  const c=$('#strip').querySelector(`.cell[data-idx="${cur}"]`);if(c)c.scrollIntoView({inline:'center',block:'nearest'});
+  if(cur>items.length-30)loadMore();
+}
+function go(idx){if(idx<0||idx>=items.length)return;cur=idx;show()}
+async function loadMore(){
+  if(loading||done)return; loading=true;
+  let got=[]; try{got=await api(`/api/files?view=${person?'all':view}&offset=${offset}&limit=${PAGE}`+(person?`&person=${person}`:'')+`&sort=${mode==='swipe'&&sort==='list'?'score':sort}`+(unm&&canUnm()?'&unmarked=1':''));if(!Array.isArray(got))got=[]}catch(e){got=[]}
+  const from=items.length; items.push(...got); offset+=got.length; done=got.length<PAGE;
+  if(view==='dupes')got.forEach(i=>{if(!i.dupe_keep&&i.state==='on_phone'&&i.flags.includes('dupe_exact'))sel.add(i.id)});
+  if(view==='sent_dupes')got.forEach(i=>{if(i.state==='on_phone'&&i.flags.includes('sent_dupe'))sel.add(i.id)});
+  render(from); bar(); loading=false;
+  if(mode==='swipe'&&!items.length)show();
+}
+async function open(){
+  items=[];sel.clear();offset=0;done=false;last=-1;cur=0;cmp=false;undo=[];pctx=null;
+  $('#swdel').textContent='← Delete';$('#swkeep').textContent='Keep →';$('#stage').classList.remove('sel');
+  await loadNav();
+  if(view==='people'&&!person){await showPeople();return}
+  bodyMode();
+  if(person)$('#title').textContent='Photos of this person';
+  rebuild(); await loadMore();
+}
+let unm=LS('pc_unm',0)==1; const canUnm=()=>!!person||['all','videos','compressed','kept'].includes(view);
+let pctx=null, smallToo=LS('pc_small',0)==1;
+async function showPeople(){
+  io.disconnect(); pctx=null;
+  const pm=mode; document.body.classList.toggle('pv',pm!=='grid'); document.body.classList.toggle('sw',pm==='swipe');
+  const pall=await api('/api/people'), ppl=smallToo?pall:pall.filter(p=>p.photos>10||p.keep), g=$('#grid'), b=$('#bar'), st=$('#stage'), strip=$('#strip'); g.innerHTML=''; strip.innerHTML=''; $('#pcmp').innerHTML='';
+  const kept=ppl.filter(p=>p.keep), list=ppl.filter(p=>showKept?p.keep:!p.keep), psel=new Set();
+  b.innerHTML=`<span class="seg"></span><label ${pm==='grid'?'':'hidden'}>Size <input type="range" min="90" max="420" step="10" value="${size}" aria-label="Thumbnail size"></label><button id="pall">Select all</button><button id="pnone">Select none</button><button id="pgo" class="primary"></button><button id="tk"></button><button id="tsm"></button><span class="count"></span>`;
+  for(const[m,t]of[['grid','Grid'],['preview','Preview']]){const x=document.createElement('button');x.textContent=t;x.setAttribute('aria-pressed',pm===m);x.onclick=()=>{mode=m;SET('pc_mode',m);showPeople()};b.querySelector('.seg').append(x)}
+  b.querySelector('input').oninput=e=>{size=+e.target.value;SET('pc_size',size);applySize()};
+  const tk=b.querySelector('#tk'); tk.textContent=showKept?'← Back to people to check':`Show kept (${kept.length})`; tk.onclick=()=>{showKept=!showKept;showPeople()};
+  const tsm=b.querySelector('#tsm'); tsm.textContent=smallToo?'Only people with 11+ photos':`Show ${pall.length-ppl.length} small groups (10 photos or fewer)`; tsm.onclick=()=>{smallToo=!smallToo;SET('pc_small',smallToo?1:0);showPeople()};
+  if(pm==='swipe')['#pall','#pnone','#pgo'].forEach(q=>b.querySelector(q).hidden=true);
+  let pc=0; const und=[];
+  const upd=()=>{
+    const n=psel.size, wa=list.filter(p=>psel.has(p.person)).reduce((a,p)=>a+p.wa,0), go=b.querySelector('#pgo');
+    go.textContent=showKept?`Move ${n||''} back to check`:`Keep ${n||''} ${n===1?'person':'people'}`; go.disabled=!n;
+    b.querySelector('.count').textContent=pm==='swipe'?`${list.length} left to check`:n?`${n} selected · ${wa} WhatsApp photos`:`${kept.length} kept · ${ppl.length-kept.length} left to check`;
+    document.querySelectorAll('#grid .cell,#strip .cell').forEach(c=>{c.classList.toggle('sel',psel.has(+c.dataset.person));c.classList.toggle('cur',pm==='preview'&&list[pc]&&+c.dataset.person===list[pc].person)});
+    if(pm!=='grid')st.classList.toggle('sel',pm==='preview'&&!!list[pc]&&psel.has(list[pc].person));
+  };
+  const stage=()=>{
+    const p=list[pc];
+    if(!p){st.innerHTML=`<div class="empty">${showKept?'Nobody is marked as keep yet.':'No one left to check.'}</div>`;$('#ptext').textContent='';upd();return}
+    st.innerHTML=`<figure style="flex:0 0 auto;height:auto"><img src="/face/${p.face}" alt="" style="width:220px;height:220px;object-fit:cover"><figcaption>${p.wa} WhatsApp · ${p.photos} total</figcaption></figure>`+p.samples.slice(0,5).map(f=>`<img src="/thumb/${f}" alt="" style="max-height:min(100%,320px);flex:0 1 auto">`).join('');
+    $('#ptext').textContent=`Person ${pc+1} of ${list.length} · in ${p.wa} WhatsApp photos, ${p.photos} photos in total`;
+    upd(); const c=strip.querySelector(`.cell[data-person="${p.person}"]`); if(c)c.scrollIntoView({inline:'center',block:'nearest'});
+  };
+  b.querySelector('#pall').onclick=()=>{list.forEach(p=>psel.add(p.person));upd()};
+  b.querySelector('#pnone').onclick=()=>{psel.clear();upd()};
+  b.querySelector('#pgo').onclick=async()=>{const n=psel.size;await api('/api/people/keep',{persons:[...psel],keep:!showKept});
+    toast(showKept?`${n} moved back to check.`:`${n} kept. Their WhatsApp photos left the WhatsApp list.`);await loadNav();showPeople()};
+  const tile=(p,idx)=>{
+    const d=document.createElement('div');d.className='cell';d.dataset.person=p.person;
+    d.innerHTML=`<img loading="lazy" src="/face/${p.face}" alt="">${p.keep?'<span class="tag keep">KEEP</span>':''}<div class="meta"><span>${p.wa} WhatsApp · ${p.photos} total</span><button class="see">see</button></div>`;
+    d.ondblclick=e=>{if(e.target.classList.contains('see'))return;e.preventDefault();person=p.person;open()};
+    d.ondblclick=e=>{if(e.target.classList.contains('see'))return;person=p.person;open()};
+    d.onclick=e=>{
+      if(e.target.classList.contains('see')){person=p.person;open();return}
+      if(pm==='preview'){pc=idx;stage();return}
+      psel.has(p.person)?psel.delete(p.person):psel.add(p.person);upd();
+    };
+    return d;
+  };
+  if(pm==='grid'){
+    if(!list.length)g.innerHTML=`<div class="empty">${showKept?'Nobody is marked as keep yet.':ppl.length?'Everyone here is marked as keep.':'No faces found yet.'}</div>`;
+    list.forEach((p,k)=>g.append(tile(p,k))); upd(); return;
+  }
+  if(pm==='preview')list.forEach((p,k)=>strip.append(tile(p,k)));
+  $('#swdel').textContent=showKept?'← Leave kept':'← Skip'; $('#swkeep').textContent=showKept?'Back to check →':'Keep →';
+  $('#swinfo').textContent='click the buttons · Z undo';
+  const act=async on=>{   // swipe: on=true applies the action (keep, or un-keep in the kept list); false just moves on
+    const p=list[pc]; if(!p)return; und.push({p,idx:pc,on}); list.splice(pc,1); if(pc>=list.length)pc=Math.max(0,list.length-1); stage();
+    if(on){await api('/api/people/keep',{persons:[p.person],keep:!showKept}); loadNav()}
+  };
+  pctx={
+    left:()=>pm==='swipe'?act(false):(pc>0&&(pc--,stage())),
+    right:()=>pm==='swipe'?act(true):(pc<list.length-1&&(pc++,stage())),
+    space:()=>{const p=list[pc];if(pm!=='preview'||!p)return;psel.has(p.person)?psel.delete(p.person):psel.add(p.person);upd()},
+    undo:async()=>{const u=und.pop();if(!u)return;list.splice(u.idx,0,u.p);pc=u.idx;stage();if(u.on){await api('/api/people/keep',{persons:[u.p.person],keep:showKept});loadNav()}},
+  };
+  stage();
+}
+const plan=new Map();        // id -> 'd' | 'a': tags set with the D and A keys, nothing is saved until a Move button is pressed
+function tag(k){
+  const ids=mode==='preview'?(items[cur]?[items[cur].id]:[]):[...sel];
+  if(!ids.length)return;
+  const off=ids.every(id=>plan.get(id)===k);            // same key again takes the tag off
+  ids.forEach(id=>off?plan.delete(id):plan.set(id,k));
+  if(mode==='preview'){if(!off&&cur<items.length-1){go(cur+1);return}}else sel.clear();
+  paint();
+}
+async function applyPlan(k){
+  const ids=[...plan].filter(([,v])=>v===k).map(([id])=>id); if(!ids.length)return;
+  await api(k==='d'?'/api/mark':'/api/keep',k==='d'?{ids,marked:true}:{ids,keep:true});
+  ids.forEach(id=>plan.delete(id));
+  toast(k==='d'?`${ids.length} moved to "Marked for deletion".`:`${ids.length} moved to "Kept (reviewed)".`); open();
+}
+async function mark(on){
+  const ids=[...sel]; await api('/api/mark',{ids,marked:on});
+  toast(on?`${ids.length} marked. Review them under "Marked for deletion".`:`${ids.length} unmarked.`); open();
+}
+async function keep(on){
+  const ids=[...sel]; await api('/api/keep',{ids,keep:on});
+  toast(on?`${ids.length} kept. They left the review lists; find them under "Kept (reviewed)".`:`${ids.length} moved back to review.`); open();
+}
+function swInfo(){
+  const l=learnInfo, e=$('#swinfo');
+  e.textContent=!l?'click the buttons · Z undo':l.trained?`Learning from ${l.keep} keeps and ${l.delete} deletes`:`${l.keep} keeps · ${l.delete} deletes. Starts guessing after 5 of each`;
+}
+async function decide(d){
+  const i=items[cur]; if(!i||mode!=='swipe')return;
+  undo.push({i,idx:cur}); items.splice(cur,1); offset=Math.max(0,offset-1);
+  if(cur>=items.length)cur=Math.max(0,items.length-1);
+  show(); bar();
+  learnInfo=await api('/api/decide',{id:i.id,decision:d}); swInfo();
+  if(items.length<25)loadMore();
+  if(undo.length%10===0)loadNav();
+}
+async function unDecide(){
+  const u=undo.pop(); if(!u)return;
+  items.splice(u.idx,0,u.i); offset++; cur=u.idx; show(); bar();
+  learnInfo=await api('/api/decide',{id:u.i.id,decision:'undo'}); swInfo();
+}
+$('#swdel').onclick=()=>pctx?pctx.left():decide('delete'); $('#swkeep').onclick=()=>pctx?pctx.right():decide('keep'); $('#swundo').onclick=()=>pctx?pctx.undo():unDecide();
+{let x0=null; const st=$('#stage'), el=()=>st.querySelector('img,video');
+ st.addEventListener('pointerdown',e=>{if(mode!=='swipe'||e.target.tagName==='VIDEO')return;x0=e.clientX;st.setPointerCapture(e.pointerId)});
+ st.addEventListener('pointermove',e=>{if(x0===null)return;const dx=e.clientX-x0,m=el();if(m)m.style.transform=`translateX(${dx}px) rotate(${dx/40}deg)`;
+   const k=st.querySelector('.verdict.k'),d=st.querySelector('.verdict.d');if(k){k.style.opacity=Math.max(0,Math.min(1,dx/120));d.style.opacity=Math.max(0,Math.min(1,-dx/120))}});
+ const end=e=>{if(x0===null)return;const dx=e.clientX-x0;x0=null;if(dx>120)pctx?pctx.right():decide('keep');else if(dx<-120)pctx?pctx.left():decide('delete');else{const m=el();if(m)m.style.transform='';st.querySelectorAll('.verdict').forEach(v=>v.style.opacity=0)}};
+ st.addEventListener('pointerup',end);st.addEventListener('pointercancel',end)}
+function askDelete(){
+  const m=views.find(x=>x.key==='marked');
+  $('#ctitle').textContent=`Delete ${m.count.toLocaleString()} files from the phone?`;
+  $('#ctext').textContent=`This frees ${gb(m.bytes)} on the phone. A backup of every file stays on this computer, so you can restore them from "Deleted". Copies in Google Photos are not touched.`;
+  const all=views.find(x=>x.key==='all').count, big=m.count>500||m.count>0.2*(all||1);
+  $('#ctypewrap').hidden=!big; $('#ctype').value=''; $('#c4kwrap').hidden=true;
+  if(big)$('#ctext').textContent+=` This is a large share of your library (${m.count.toLocaleString()} of ${all.toLocaleString()} files).`;
+  $('#cyes').textContent='Delete from phone'; cdo=()=>job('/api/delete',{typed:$('#ctype').value}); $('#confirm').showModal();
+}
+let cdo=null;
+function askRestoreDay(d){
+  $('#ctypewrap').hidden=true;$('#c4kwrap').hidden=true;
+  $('#ctitle').textContent=`Restore everything deleted on ${new Date(d.day+'T12:00').toLocaleDateString(undefined,{day:'numeric',month:'long'})}?`;
+  $('#ctext').textContent=`${d.n.toLocaleString()} files (${gb(d.bytes)}) go back to the phone at their original places, with their original dates.`;
+  $('#cyes').textContent='Restore'; cdo=()=>job('/api/restore',{day:d.day}); $('#confirm').showModal();
+}
+function askCompress(){
+  $('#ctypewrap').hidden=true;
+  const v=items.filter(i=>sel.has(i.id)&&i.kind==='video'&&!i.flags.includes('compressed')), b=v.reduce((a,i)=>a+i.bytes,0), mins=Math.max(1,Math.round(v.reduce((a,i)=>a+(i.duration||0),0)*1.6/60));
+  $('#ctitle').textContent=`Compress ${v.length} video${v.length>1?'s':''} on the phone?`;
+  $('#ctext').textContent=`${gb(b)} now. Each video is replaced by a smaller copy with the same name and dates; a video that would not shrink by at least 25% is left alone. Originals stay on this computer and can be put back. Rough time: ${mins} min. Google Photos will upload each smaller copy as a new item and keep the old one in the cloud.`;
+  const big=v.filter(i=>Math.min(i.w||0,i.h||0)>1080); $('#c4kwrap').hidden=!big.length; $('#c4k').checked=false; $('#c4kn').textContent=`${big.length} of these, ${gb(big.reduce((a,i)=>a+i.bytes,0))}`;
+  $('#cyes').textContent='Compress'; cdo=()=>job('/api/compress',{ids:v.map(i=>i.id),scale4k:$('#c4k').checked}); $('#confirm').showModal();
+}
+function askReset(){
+  $('#ctypewrap').hidden=true;$('#c4kwrap').hidden=true;
+  const k=views.find(x=>x.key==='kept'), p=views.find(x=>x.key==='people');
+  $('#ctitle').textContent='Start the review over?';
+  $('#ctext').textContent=`This puts ${k.count.toLocaleString()} kept photos and ${p.kept} kept people back into the review lists and forgets what swipe mode learned. Nothing changes on the phone. Photos marked for deletion or already deleted stay as they are.`;
+  $('#cyes').textContent='Reset review'; cdo=async()=>{const r=await api('/api/reset',{});toast(`Reset: ${r.photos} photos and ${r.people} people are back in review.`);showKept=false;learnInfo=null;open()}; $('#confirm').showModal();
+}
+$('#cno').onclick=()=>$('#confirm').close();
+$('#cyes').onclick=()=>{$('#confirm').close();cdo?cdo():0};
+async function job(path,body){const r=await api(path,body);if(r.error){toast(r.error,12000);loadNav();return}pollJob()}
+async function pollJob(){
+  const j=await api('/api/job');
+  if(j.running){toast(`${j.what}: ${j.done} of ${j.total} done`+(j.detail&&j.detail.name?` · now ${j.detail.name} ${j.detail.pct}%`:''),60000);setTimeout(pollJob,1000);return}
+  const r=j.result||{};
+  if(r.error)toast('Failed: '+r.error,10000);
+  else toast(`${j.what} finished: ${(r.deleted??r.restored??r.done)||0} done`+(r.bytes?`, ${gb(r.bytes)} freed`:'')+(r.skipped&&r.skipped.length?`, ${r.skipped.length} skipped (${r.skipped[0][1]})`:''),10000);
+  open();
+}
+document.addEventListener('keydown',e=>{
+  if($('#confirm').open||e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  const k=e.key.toLowerCase(), plain=!e.ctrlKey&&!e.metaKey&&!e.altKey;
+  if(plain&&(k==='d'||k==='a')){                       // D = tag delete, A = tag keep; the Move buttons in the bar save them
+    e.preventDefault(); if(e.repeat)return;
+    if(pctx||mode==='swipe'||['marked','deleted','kept','compressed'].includes(view))return;
+    tag(k); return}
+  if(pctx){
+    if(mode!=='swipe'&&e.key==='ArrowLeft'){e.preventDefault();pctx.left()}
+    if(mode!=='swipe'&&e.key==='ArrowRight'){e.preventDefault();pctx.right()}
+    if(e.key===' '){e.preventDefault();pctx.space()}
+    if(e.key==='z'||e.key==='Z'||(mode!=='swipe'&&e.key==='ArrowDown')){e.preventDefault();pctx.undo()}
+    return}
+  if(mode==='swipe'){
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.preventDefault();     // arrow keys do nothing here: click the buttons
+    if(e.key==='z'||e.key==='Z'){e.preventDefault();unDecide()}
+    return}
+  if(mode!=='preview')return;
+  if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1)}
+  if(e.key==='ArrowRight'){e.preventDefault();go(cur+1)}
+  if(e.key===' '&&items[cur]){e.preventDefault();const id=items[cur].id;sel.has(id)?sel.delete(id):sel.add(id);paint()}
+});
+let io=new IntersectionObserver(()=>{});
+let progTimer=null;
+async function pollProg(){
+  clearTimeout(progTimer);
+  let p=null; try{p=await api('/api/progress')}catch(e){}
+  const box=$('#prog'), active=p&&['LIST','COPY','SCAN','ANALYSE','LEARN'].includes(p.stage);
+  box.hidden=!active;
+  if(active){const pct=p.total>0?Math.min(100,100*p.done/p.total):0;$('#progtext').textContent=p.total>1?`${p.label}  (${pct.toFixed(0)}%)`:(p.label||'Finishing up…');box.querySelector('i').style.width=pct+'%'}
+  else if(pollProg.was&&p&&p.stage==='DONE'){toast('Sync finished. The lists are up to date.',15000);open()}
+  else if(pollProg.was&&p&&p.stage==='FAILED'){toast('Sync stopped with an error. Nothing on the phone was changed.',20000)}
+  pollProg.was=active; progTimer=setTimeout(pollProg,active?5000:15000);
+}
+pollProg.now=()=>{pollProg.was=true;progTimer=setTimeout(pollProg,1500)};
+$('main').append($('#prog'));applySize();bodyMode();open();pollProg();
+</script>
+</body>
+</html>
